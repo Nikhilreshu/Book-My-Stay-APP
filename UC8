@@ -1,0 +1,89 @@
+/**
+ * Booking History and Reporting Application
+ * @author Student
+ * @version 8.0
+ */
+import java.util.*;
+
+class Reservation {
+    private String reservationId;
+    private String guestName;
+    private String roomType;
+
+    public Reservation(String reservationId, String guestName, String roomType) {
+        this.reservationId = reservationId;
+        this.guestName = guestName;
+        this.roomType = roomType;
+    }
+
+    public String getReservationId() {
+        return reservationId;
+    }
+
+    public String getGuestName() {
+        return guestName;
+    }
+
+    public String getRoomType() {
+        return roomType;
+    }
+}
+
+class BookingHistory {
+    private List<Reservation> history;
+
+    public BookingHistory() {
+        history = new ArrayList<>();
+    }
+
+    public void addReservation(Reservation reservation) {
+        history.add(reservation);
+    }
+
+    public List<Reservation> getAllReservations() {
+        return history;
+    }
+}
+
+class BookingReportService {
+    public void displayAllBookings(List<Reservation> reservations) {
+        for (Reservation r : reservations) {
+            System.out.println("ID: " + r.getReservationId() +
+                    " | Guest: " + r.getGuestName() +
+                    " | Room: " + r.getRoomType());
+        }
+    }
+
+    public void displaySummary(List<Reservation> reservations) {
+        Map<String, Integer> summary = new HashMap<>();
+        for (Reservation r : reservations) {
+            summary.put(r.getRoomType(),
+                    summary.getOrDefault(r.getRoomType(), 0) + 1);
+        }
+
+        System.out.println("Booking Summary:");
+        for (String type : summary.keySet()) {
+            System.out.println(type + " : " + summary.get(type));
+        }
+    }
+}
+
+public class UseCase8BookingHistoryReport {
+    public static void main(String[] args) {
+        System.out.println("Hotel Booking Management System");
+        System.out.println("Version: 8.0");
+
+        BookingHistory history = new BookingHistory();
+
+        history.addReservation(new Reservation("R1", "Alice", "Single Room"));
+        history.addReservation(new Reservation("R2", "Bob", "Double Room"));
+        history.addReservation(new Reservation("R3", "Charlie", "Single Room"));
+
+        BookingReportService reportService = new BookingReportService();
+
+        System.out.println("All Bookings:");
+        reportService.displayAllBookings(history.getAllReservations());
+
+        reportService.displaySummary(history.getAllReservations());
+    }
+}
