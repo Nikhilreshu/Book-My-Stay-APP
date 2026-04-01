@@ -1,0 +1,140 @@
+/**
+ * Booking Cancellation & Inventory Rollback Application
+ * @author Student
+ * @version 10.0
+ */
+import java.util.*;
+
+class Reservation {
+    private String reservationId;
+    private String guestName;
+    private String roomType;
+
+    public Reservation(String reservationId, String guestName, String roomType) {
+        this.reservationId = reservationId;
+        this.guestName = guestName;
+        this.roomType = roomType;
+    }
+
+    public String getReservationId() {
+        return reservationId;
+    }
+
+    public String getGuestName() {
+        return guestName;
+    }
+
+    public String getRoomType() {
+        return roomType;
+    }
+}
+
+class RoomInventory {
+    private Map<String, Integer> inventory;
+
+    public RoomInventory() {
+        inventory = new HashMap<>();
+    }
+
+    public void addRoomType(String type, int count) {
+        inventory.put(type, count);
+    }
+
+    public int getAvailability(String type) {
+        return inventory.getOrDefault(type, 0);
+    }
+
+    public void increment(String type) {
+        inventory.put(type, inventory.getOrDefault(type, 0) + 1);
+    }
+
+    public void decrement(String type) {
+        inventory.put(type, inventory.get(type) - 1);
+    }
+}
+
+class BookingHistory {
+    private Map<String, Reservation> confirmedReservations;
+
+    public BookingHistory() {
+        confirmedReservations = new HashMap<>();
+    }
+
+    public void addReservation(Reservation reservation) {
+        confirmedReservations.put(reservation.getReservationId(), reservation);
+    }
+
+    public Reservation getReservation(String reservationId) {
+        return confirmedReservations.get(reservationId);
+    }
+
+    public void removeReservation(String reservationId) {
+        confirmedReservations.remove(reservationId);
+    }
+
+    public Collection<Reservation> getAllReservations() {
+        return confirmedReservations.values();
+    }
+}
+
+class CancellationService {
+    private RoomInventory inventory;
+    private BookingHistory history;
+    private Stack<String> rollbackStack;
+
+    public CancellationService(RoomInventory inventory, BookingHistory history) {
+        this.inventory = inventory;
+        this.history = history;
+        rollbackStack = new Stack<>();
+    }
+
+    public void cancelReservation(String reservationId) {
+        Reservation res = history.getReservation(reservationId);
+        if (res == null) {
+            System.out.println("Cancellation Failed: Reservation does not exist.");
+            return;
+        }
+
+        rollbackStack.push(reservationId);
+        inventory.increment(res.getRoomType());
+        history.removeReservation(reservationId);
+
+        System.out.println("Cancellation Successful: " + res.getGuestName() +
+                " | Room: " + res.getRoomType());
+    }
+
+    public void displayRollbackHistory() {
+        System.out.println("Recently Cancelled Reservations (LIFO):");
+        for (String id : rollbackStack) {
+            System.out.println(id);
+        }
+    }
+}
+
+public class UseCase10BookingCancellation {
+    public static void main(String[] args) {
+        System.out.println("Hotel Booking Management System");
+        System.out.println("Version: 10.0");
+
+        RoomInventory inventory = new RoomInventory();
+        inventory.addRoomType("Single Room", 2);
+        inventory.addRoomType("Double Room", 1);
+
+        BookingHistory history = new BookingHistory();
+
+        Reservation r1 = new Reservation("R1", "Alice", "Single Room");
+        Reservation r2 = new Reservation("R2", "Bob", "Double Room");
+        history.addReservation(r1);
+        history.addReservation(r2);
+
+        CancellationService cancellationService = new CancellationService(inventory, history);
+
+        cancellationService.cancelReservation("R1");
+        cancellationService.cancelReservation("R3");
+        cancellationService.displayRollbackHistory();
+
+        System.out.println("Current Inventory:");
+        System.out.println("Single Room: " + inventory.getAvailability("Single Room"));
+        System.out.println("Double Room: " + inventory.getAvailability("Double Room"));
+    }
+}
