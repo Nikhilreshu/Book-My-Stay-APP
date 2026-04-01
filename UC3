@@ -1,0 +1,53 @@
+/**
+ * Inventory Setup Application
+ * @author Student
+ * @version 3.1
+ */
+import java.util.HashMap;
+import java.util.Map;
+
+class RoomInventory {
+    private Map<String, Integer> inventory;
+
+    public RoomInventory() {
+        inventory = new HashMap<>();
+    }
+
+    public void addRoomType(String type, int count) {
+        inventory.put(type, count);
+    }
+
+    public int getAvailability(String type) {
+        return inventory.getOrDefault(type, 0);
+    }
+
+    public void updateAvailability(String type, int count) {
+        inventory.put(type, count);
+    }
+
+    public void displayInventory() {
+        for (String type : inventory.keySet()) {
+            System.out.println(type + " Available: " + inventory.get(type));
+        }
+    }
+}
+
+public class UseCase3InventorySetup {
+    public static void main(String[] args) {
+        System.out.println("Hotel Booking Management System");
+        System.out.println("Version: 3.1");
+
+        RoomInventory inventory = new RoomInventory();
+
+        inventory.addRoomType("Single Room", 5);
+        inventory.addRoomType("Double Room", 3);
+        inventory.addRoomType("Suite Room", 2);
+
+        inventory.displayInventory();
+
+        inventory.updateAvailability("Single Room", 4);
+
+        System.out.println("After Update:");
+        inventory.displayInventory();
+    }
+}
