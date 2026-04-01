@@ -1,0 +1,141 @@
+/**
+ * Hotel Booking Persistence & Recovery Application
+ * @author Student
+ * @version 12.0
+ */
+import java.io.*;
+import java.util.*;
+
+class RoomInventory implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private Map<String, Integer> inventory;
+
+    public RoomInventory() {
+        inventory = new HashMap<>();
+    }
+
+    public void addRoomType(String type, int count) {
+        inventory.put(type, count);
+    }
+
+    public boolean allocateRoom(String type) {
+        int available = inventory.getOrDefault(type, 0);
+        if (available > 0) {
+            inventory.put(type, available - 1);
+            return true;
+        }
+        return false;
+    }
+
+    public int getAvailability(String type) {
+        return inventory.getOrDefault(type, 0);
+    }
+
+    public Map<String, Integer> getInventorySnapshot() {
+        return new HashMap<>(inventory);
+    }
+}
+
+class Reservation implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private String guestName;
+    private String roomType;
+
+    public Reservation(String guestName, String roomType) {
+        this.guestName = guestName;
+        this.roomType = roomType;
+    }
+
+    public String getGuestName() {
+        return guestName;
+    }
+
+    public String getRoomType() {
+        return roomType;
+    }
+
+    @Override
+    public String toString() {
+        return guestName + " | " + roomType;
+    }
+}
+
+class BookingHistory implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private List<Reservation> reservations;
+
+    public BookingHistory() {
+        reservations = new ArrayList<>();
+    }
+
+    public void addReservation(Reservation res) {
+        reservations.add(res);
+    }
+
+    public List<Reservation> getAllReservations() {
+        return new ArrayList<>(reservations);
+    }
+}
+
+class PersistenceService {
+    public static void saveState(RoomInventory inventory, BookingHistory history, String fileName) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(fileName))) {
+            oos.writeObject(inventory);
+            oos.writeObject(history);
+        } catch (IOException e) {
+            System.out.println("Error saving system state: " + e.getMessage());
+        }
+    }
+
+    public static Object[] restoreState(String fileName) {
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fileName))) {
+            RoomInventory inventory = (RoomInventory) ois.readObject();
+            BookingHistory history = (BookingHistory) ois.readObject();
+            return new Object[]{inventory, history};
+        } catch (Exception e) {
+            System.out.println("No saved state found or corrupted file. Initializing new state.");
+            return null;
+        }
+    }
+}
+
+public class UseCase12DataPersistenceRecovery {
+    public static void main(String[] args) {
+        System.out.println("Hotel Booking System with Persistence & Recovery");
+        System.out.println("Version: 12.0");
+
+        String stateFile = "hotel_state.dat";
+
+        Object[] restored = PersistenceService.restoreState(stateFile);
+        RoomInventory inventory;
+        BookingHistory history;
+
+        if (restored != null) {
+            inventory = (RoomInventory) restored[0];
+            history = (BookingHistory) restored[1];
+        } else {
+            inventory = new RoomInventory();
+            inventory.addRoomType("Single Room", 2);
+            inventory.addRoomType("Double Room", 1);
+            history = new BookingHistory();
+        }
+
+        Reservation r1 = new Reservation("Alice", "Single Room");
+        Reservation r2 = new Reservation("Bob", "Double Room");
+
+        if (inventory.allocateRoom(r1.getRoomType())) history.addReservation(r1);
+        if (inventory.allocateRoom(r2.getRoomType())) history.addReservation(r2);
+
+        System.out.println("Current Bookings:");
+        for (Reservation r : history.getAllReservations()) {
+            System.out.println(r);
+        }
+
+        System.out.println("Current Inventory:");
+        System.out.println("Single Room: " + inventory.getAvailability("Single Room"));
+        System.out.println("Double Room: " + inventory.getAvailability("Double Room"));
+
+        PersistenceService.saveState(inventory, history, stateFile);
+        System.out.println("System state saved to " + stateFile);
+    }
+}
