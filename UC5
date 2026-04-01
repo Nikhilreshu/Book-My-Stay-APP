@@ -1,0 +1,58 @@
+/**
+ * Booking Request Queue Application
+ * @author Student
+ * @version 5.0
+ */
+import java.util.*;
+
+class Reservation {
+    private String guestName;
+    private String roomType;
+
+    public Reservation(String guestName, String roomType) {
+        this.guestName = guestName;
+        this.roomType = roomType;
+    }
+
+    public String getGuestName() {
+        return guestName;
+    }
+
+    public String getRoomType() {
+        return roomType;
+    }
+}
+
+class BookingRequestQueue {
+    private Queue<Reservation> queue;
+
+    public BookingRequestQueue() {
+        queue = new LinkedList<>();
+    }
+
+    public void addRequest(Reservation reservation) {
+        queue.offer(reservation);
+    }
+
+    public void displayQueue() {
+        for (Reservation r : queue) {
+            System.out.println("Guest: " + r.getGuestName() + " | Room: " + r.getRoomType());
+        }
+    }
+}
+
+public class UseCase5BookingRequestQueue {
+    public static void main(String[] args) {
+        System.out.println("Hotel Booking Management System");
+        System.out.println("Version: 5.0");
+
+        BookingRequestQueue bookingQueue = new BookingRequestQueue();
+
+        bookingQueue.addRequest(new Reservation("Alice", "Single Room"));
+        bookingQueue.addRequest(new Reservation("Bob", "Double Room"));
+        bookingQueue.addRequest(new Reservation("Charlie", "Suite Room"));
+
+        System.out.println("Booking Requests in Order:");
+        bookingQueue.displayQueue();
+    }
+}
